@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Portfolio</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+	 crossorigin="anonymous">
+	<script type="text/javascript" src="nightModeScript.js"></script>
+	<link rel="stylesheet" type="text/css" href="myStyle.css">
+
+</head>
+
+<body class="snake">
+	<div class="wrap">
+		<header>
+			<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+				<a class="navbar-brand" href="index.html">Mike Byun</a>
+				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown"
+				 aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarNavDropdown">
+					<ul class="navbar-nav">
+						<li class="nav-item active">
+							<a class="nav-link" href="index.html">Home <span class="sr-only"></span></a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#">Unity Projects</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#">School Projects</a>
+						</li>
+						<li class="nav-item dropdown">
+							<a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true"
+							 aria-expanded="false">
+								Web Projects</a>
+							<div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+								<a class="dropdown-item" href="#">HTML</a>
+								<a class="dropdown-item" href="snake.html">Javascript</a>
+								<a class="dropdown-item" href="#">Others?</a>
+							</div>
+						</li>
+					</ul>
+					<span class="navbar-text">
+						<div class="onoffswitch">
+							<input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" onclick="nightMode()"
+							 checked>
+							<label class="onoffswitch-label" for="myonoffswitch">
+								<span class="onoffswitch-inner"></span>
+								<span class="onoffswitch-switch"></span>
+							</label>
+						</div>
+					</span>
+				</div>
+			</nav>
+		</header>
+
+		<section>
+			<h3>Press 'Spacebar' to Pause &nbsp;Press 'P' to Play &nbsp; Press 'R' to Restart</h3>
+			<canvas id="canvas" width="1200" height="600"></canvas>
+			<script>
+				$(document).ready(function () {
+					var canvas = $("#canvas")[0];
+					var ctx = canvas.getContext("2d");
+					var w = $("#canvas").width();
+					var h = $("#canvas").height();
+					var cw = 10;
+					var defaultDirection;
+					var food;
+					var yellowFood;
+					var redFood;
+					var score;
+					var speed;
+					var paused = false;
+
+					var snake_array;
+
+					function play() {
+						speed = 100;
+						if (typeof game_loop != "undefined") clearInterval(game_loop);
+						game_loop = setInterval(paint, speed);
+						allowPressKeys = false;
+					}
+					function pause() {
+						clearInterval(game_loop);
+						allowPressKeys = false;
+					}
+					function init() {
+						speed = 100;
+						defaultDirection = "right";
+						play();
+						create_snake();
+						create_food();
+						create_yellowFood();
+						create_redFood();
+						score = 0;
+						//if(typeof game_loop != "undefined") clearInterval(game_loop);
+						//game_loop = setInterval(paint, speed);
+					}
+					init();
+
+					function create_snake() {
+						var length = 5;
+						snake_array = [];
+						for (var i = length - 1; i >= 0; i--) {
+							snake_array.push({ x: i, y: 0 });
+						}
+					}
+
+					function create_food() {
+						food = {
+							x: Math.round(Math.random() * (w - cw) / cw),
+							y: Math.round(Math.random() * (h - cw) / cw),
+						};
+					}
+					function create_yellowFood() {
+						yellowFood = {
+							x: Math.round(Math.random() * (w - cw) / cw),
+							y: Math.round(Math.random() * (h - cw) / cw),
+						};
+					}
+					function create_redFood() {
+						redFood = {
+							x: Math.round(Math.random() * (w - cw) / cw),
+							y: Math.round(Math.random() * (h - cw) / cw),
+						};
+					}
+
+					function paint() {
+
+						ctx.fillStyle = "green";
+						ctx.fillRect(0, 0, w, h);
+						ctx.strokeStyle = "black";
+						ctx.strokeRect(0, 0, w, h);
+
+						var nx = snake_array[0].x;
+						var ny = snake_array[0].y;
+						if (defaultDirection == "right") nx++;
+						else if (defaultDirection == "left") nx--;
+						else if (defaultDirection == "up") ny--;
+						else if (defaultDirection == "down") ny++;
+
+						if (nx == -1 || nx == w / cw || ny == -1 || ny == h / cw || check_collision(nx, ny, snake_array) || nx == redFood.x && ny == redFood.y) {
+							alert("You lost! \n score:" + score);
+							init();
+							return;
+						}
+
+
+						if (nx == food.x && ny == food.y) {
+							var tail = { x: nx, y: ny };
+							score++;
+							speed = speed - 1;
+							//game_loop = setInterval(paint, speed);	
+							create_food();
+						}
+						else if (nx == yellowFood.x && ny == yellowFood.y) {
+							//var tail = {x: nx, y: ny};
+							score++;
+							var tail = snake_array.pop();
+							tail = snake_array.pop();
+							tail.x = nx;
+							tail.y = ny;
+							//Create new food
+							//game_loop = setInterval(paint, speed);
+							//speed -= 10;
+							create_yellowFood();
+						}
+						else {
+							var tail = snake_array.pop();
+							tail.x = nx; tail.y = ny;
+						}
+
+
+						snake_array.unshift(tail);
+
+						for (var i = 0; i < snake_array.length; i++) {
+							var c = snake_array[i];
+							paint_cell(c.x, c.y);
+						}
+
+						paint_cell(food.x, food.y);
+						paint_Foodcell(yellowFood.x, yellowFood.y);
+						paint_redFoodcell(redFood.x, redFood.y);
+						var score_text = "Score: " + score;
+						ctx.fillText(score_text, 5, h - 5);
+					}
+
+					function paint_cell(x, y) {
+						ctx.fillStyle = "blue";
+						ctx.fillRect(x * cw, y * cw, cw, cw);
+						ctx.strokeStyle = "white";
+						ctx.strokeRect(x * cw, y * cw, cw, cw);
+					}
+					function paint_Foodcell(x, y) {
+						ctx.fillStyle = "yellow";
+						ctx.fillRect(x * cw, y * cw, cw, cw);
+						ctx.strokeStyle = "white";
+						ctx.strokeRect(x * cw, y * cw, cw, cw);
+					}
+					function paint_redFoodcell(x, y) {
+						ctx.fillStyle = "red";
+						ctx.fillRect(x * cw, y * cw, cw, cw);
+						ctx.strokeStyle = "white";
+						ctx.strokeRect(x * cw, y * cw, cw, cw);
+					}
+					function check_collision(x, y, array) {
+						for (var i = 0; i < array.length; i++) {
+							if (array[i].x == x && array[i].y == y)
+								return true;
+						}
+						return false;
+					}
+					$(document).keydown(function (e) {
+						var key = e.which;
+						if (key == "37" && defaultDirection != "right") defaultDirection = "left";
+						else if (key == "38" && defaultDirection != "down") defaultDirection = "up";
+						else if (key == "39" && defaultDirection != "left") defaultDirection = "right";
+						else if (key == "40" && defaultDirection != "up") defaultDirection = "down";
+						else if (key == "32") pause();
+						else if (key == "80") play();
+						else if (key == "82") {
+							init();
+							play();
+						}
+
+					}
+					)
+				})
+			</script>
+		</section>
+		<!-- got this switch from proto.io/freebies/onoff-->
+
+		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+		 crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+		 crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+		 crossorigin="anonymous"></script>
+	</div>
+</body>
+
+</html>
