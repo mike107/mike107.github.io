@@ -1,3 +1,4 @@
+// got this switch from proto.io/freebies/onoff
 function nightMode(){
     var checkBox = document.getElementById("myonoffswitch");
     var text = document.getElementById("main");
